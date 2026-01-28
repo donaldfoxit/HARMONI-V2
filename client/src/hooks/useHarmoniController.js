@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import { createClient } from '@supabase/supabase-js';
 import { fallbackQuestions as localFallbackQuestions, fallbackRiskyQuestions as localFallbackRiskyQuestions } from '../data/fallback-questions';
 
@@ -23,18 +23,17 @@ const smartShuffle = (array) => {
   return [...fixed, ...others];
 };
 
-// --- HELPER: Data Organizer ---
+// --- HELPER: Data Organizer (Main Questions) ---
 const organizeQuestions = (rawData) => {
   const organized = { round0: [], round1: [], round2: [], round3: [], round4: [], round5: [], round6: [] };
 
   if (!rawData) return organized;
 
-  // Handle both Array (flat) and Object (already organized) structures
-  const dataArray = Array.isArray(rawData) ? rawData :
-    Object.values(rawData).flat();
+  const dataArray = Array.isArray(rawData) ? rawData : Object.values(rawData).flat();
 
   dataArray.forEach(item => {
     if (!item) return;
+    // NORMALIZE: Ensure 'q' property exists regardless of DB column name
     const q = {
       q: item.question || item.q || item.question_text || "Breathe...",
       round: item.round_number ?? item.round ?? 0,
@@ -53,10 +52,73 @@ const organizeQuestions = (rawData) => {
   return organized;
 };
 
+// --- HELPER: Data Normalizer (Risky Questions) ---
+const normalizeRisky = (rawData) => {
+  if (!rawData || !Array.isArray(rawData)) return [];
+  return rawData.map(item => ({
+    q: item.question || item.q || item.question_text || "What is a truth you've never shared?",
+    depth: item.depth || 4,
+    intensity: item.intensity || 'high'
+  }));
+};
+
+// --- EXPORTS: Constants (Restored from Robust Version) ---
+export const roundInfo = {
+  0: { name: "Warm Welcome", color: "from-amber-100" },
+  1: { name: "First Glimpses", color: "from-blue-50" },
+  2: { name: "Authentic Self", color: "from-emerald-50" },
+  3: { name: "Heart Space", color: "from-rose-50" },
+  4: { name: "Dreams & Visions", color: "from-violet-50" },
+  5: { name: "Forever Questions", color: "from-indigo-50" },
+  6: { name: "Compatibility", color: "from-slate-50" },
+};
+
+export const destinations = [
+  {
+    name: "Moonlit Garden",
+    image: "/assets/jonathan-borba-Fa8xXVzkkXc-unsplash.jpg",
+    icon: "🌙",
+    visual: "✨",
+    description: "Quiet magic under stars",
+    gradient: "from-indigo-100 to-purple-100",
+    darkGradient: "from-indigo-900 to-purple-900",
+    theme: "moonlight",
+    youtubeId: "LcDjP3cdk0g",
+    songName: "Clair de Lune Piano",
+    songArtist: "Classical"
+  },
+  {
+    name: "Royal Realm",
+    image: "/assets/dilip-poddar-7JboWm-aZr4-unsplash.jpg",
+    icon: "👑",
+    visual: "🏰",
+    description: "Ancient nobility & timeless love",
+    gradient: "from-blue-50 to-slate-100",
+    darkGradient: "from-blue-900 to-slate-900",
+    theme: "mist",
+    youtubeId: "8O-1qB-fxjc",
+    songName: "Kingdom Sleep Music",
+    songArtist: "Relaxation"
+  },
+  {
+    name: "Nature Walk",
+    image: "/assets/anneliese-phillips-uv4-vl3liKM-unsplash.jpg",
+    icon: "🌲",
+    visual: "🍃",
+    description: "Nature's gentle embrace",
+    gradient: "from-green-100 to-emerald-100",
+    darkGradient: "from-green-900 to-emerald-900",
+    theme: "woods",
+    youtubeId: "MqDODqQO0FI",
+    songName: "Forest Nature Sounds",
+    songArtist: "Nature Ambience"
+  }
+];
+
 // --- HOOK START ---
 export function useHarmoniController() {
-  // 1. STATE INITIALIZATION (The "Breathe" Fix)
-  // We run organizeQuestions immediately so data exists on first render.
+  // 1. STATE INITIALIZATION - Always start with Valid Local Data
+  // organizeQuestions ensures structure is correct immediately.
   const [questions, setQuestions] = useState(() => organizeQuestions(localFallbackQuestions));
 
   const [stage, setStage] = useState("welcome");
@@ -75,45 +137,49 @@ export function useHarmoniController() {
   const [timeRemaining, setTimeRemaining] = useState(null);
   const [timerActive, setTimerActive] = useState(false);
 
-  // Data State - Initialize with Fallback (The Risky Fix)
-  // We start with localFallbackRiskyQuestions so it is NEVER empty.
+  // Data State - Initialize with Fallback
   const [riskyQuestions, setRiskyQuestions] = useState(localFallbackRiskyQuestions || []);
   const [bondingPrompts, setBondingPrompts] = useState([]);
 
-  // --- REFS (The Bonding Fix) ---
+  // --- REFS ---
   const questionCounter = useRef(0);
   const nextBondingTarget = useRef(Math.floor(Math.random() * 3) + 2);
 
-  // --- 2. SUPABASE FETCH ---
-  useEffect(() => {
-    const initData = async () => {
-      try {
-        // A. Questions
-        const { data: qData } = await supabase.from('questions').select('*');
-        if (qData && qData.length > 0) {
-          setQuestions(organizeQuestions(qData));
-        }
-
-        // B. Risky (PROPER LOGIC RESTORED)
-        // If DB returns data, use it. If not, keep the local list we started with.
-        const { data: rData } = await supabase.from('risky_questions').select('*');
-        if (rData && rData.length > 0) {
-          setRiskyQuestions(rData);
-        }
-        // Note: We removed the "else { set([]) }" bug. We simply do nothing if it's empty,
-        // preserving the localFallbackRiskyQuestions.
-
-        // C. Bonding
-        const { data: bData } = await supabase.from('bonding_prompts').select('*');
-        if (bData && bData.length > 0) {
-          setBondingPrompts(bData);
-        }
-      } catch (e) {
-        // Silent fail is fine because we already loaded fallback data in useState
+  // --- 2. SUPABASE FETCH (The Triple-Layer Fix) ---
+  const fetchQuestionsFromSupabase = useCallback(async () => {
+    try {
+      // A. Questions
+      const { data: qData, error: qError } = await supabase.from('questions').select('*');
+      // SAFETY LAYER 2: Only update if we get valid, non-empty data
+      if (!qError && qData && qData.length > 0) {
+        // NORMALIZE: Use organizer to ensure 'q' property exists
+        const organized = organizeQuestions(qData);
+        setQuestions(organized);
       }
-    };
-    initData();
+
+      // B. Bonding Prompts
+      const { data: bData } = await supabase.from('bonding_prompts').select('*');
+      if (bData && bData.length > 0) {
+        setBondingPrompts(bData);
+      }
+
+      // C. Risky Questions 
+      const { data: rData, error: rError } = await supabase.from('risky_questions').select('*');
+      // SAFETY LAYER 2: Check for empty array
+      if (!rError && rData && rData.length > 0) {
+        // NORMALIZE: Map DB fields to 'q' property
+        setRiskyQuestions(normalizeRisky(rData));
+      } else {
+        console.log("Keeping local risky questions (Supabase empty/fail)");
+      }
+    } catch (e) {
+      console.warn("Supabase load failed, staying on fallback:", e);
+    }
   }, []);
+
+  useEffect(() => {
+    fetchQuestionsFromSupabase();
+  }, [fetchQuestionsFromSupabase]);
 
   // --- 3. TIMER LOGIC ---
   useEffect(() => {
@@ -144,33 +210,33 @@ export function useHarmoniController() {
     setStage('journey');
     setAudioPlaying(true);
 
-    // Reset Refs
     questionCounter.current = 0;
     nextBondingTarget.current = Math.floor(Math.random() * 3) + 2;
   };
 
   const handleContinue = () => {
-    // 1. BONDING LOGIC (Ref-based)
     questionCounter.current += 1;
 
     if (questionCounter.current >= nextBondingTarget.current) {
-      // Pick Random Prompt
+      // Bonding
       let prompt = { text: "Look into each other's eyes for 60 seconds." };
       if (bondingPrompts.length > 0) {
         prompt = bondingPrompts[Math.floor(Math.random() * bondingPrompts.length)];
       }
-
       setCurrentBondingPrompt(prompt);
       setShowBondingPrompt(true);
-
-      // Reset Logic
       questionCounter.current = 0;
       nextBondingTarget.current = Math.floor(Math.random() * 3) + 2;
     }
     else {
-      // 2. NAVIGATION LOGIC
+      // Navigation
       const curRoundKey = `round${currentRound}`;
       const roundQs = questions?.[curRoundKey] || [];
+
+      // Safety Check: If round is empty, skip or end
+      if (roundQs.length === 0) {
+        console.warn(`Round ${currentRound} is empty!`);
+      }
 
       if (currentQuestion < roundQs.length - 1) {
         setCurrentQuestion(prev => prev + 1);
@@ -182,25 +248,19 @@ export function useHarmoniController() {
         setTimerActive(false);
       }
 
-      // Update Progress
       setProgress(prev => Math.min(prev + 2, 100));
     }
   };
 
   const handleDareToRisk = () => {
-    // Logic: Pick from the state. Since we fixed initialization and fetching, 
-    // 'riskyQuestions' is guaranteed to be a full array (either from DB or Local).
-    const pool = riskyQuestions;
+    // SAFETY LAYER 3: Handler Failsafe
+    let pool = riskyQuestions;
+    if (!pool || pool.length === 0) pool = localFallbackRiskyQuestions;
+    if (!pool || pool.length === 0) pool = [{ q: "What is a truth you've never shared?" }];
 
-    if (pool && pool.length > 0) {
-      const q = pool[Math.floor(Math.random() * pool.length)];
-      setCurrentRiskyQuestion(q);
-      setShowRiskyQuestion(true);
-    } else {
-      // This should theoretically never happen now, but safe to keep just in case.
-      setCurrentRiskyQuestion({ q: "What is a truth you've never shared?" });
-      setShowRiskyQuestion(true);
-    }
+    const q = pool[Math.floor(Math.random() * pool.length)];
+    setCurrentRiskyQuestion(q);
+    setShowRiskyQuestion(true);
   };
 
   const formatTime = (seconds) => {
@@ -212,13 +272,13 @@ export function useHarmoniController() {
 
   // Safe Question Accessor
   const currentRoundQuestions = questions?.[`round${currentRound}`] || [];
-  const currentQuestionData = currentRoundQuestions[currentQuestion] || { q: "Loading..." };
+  const currentQuestionData = currentRoundQuestions[currentQuestion] || null;
 
   return {
     gameState: {
       stage, destination, currentRound, currentQuestion,
       currentQuestionData,
-      currentRoundQuestions, // Required for UI
+      currentRoundQuestions,
       audioPlaying, showBondingPrompt, currentBondingPrompt,
       showRiskyQuestion, currentRiskyQuestion,
       timeRemaining: formatTime(timeRemaining),
@@ -230,28 +290,8 @@ export function useHarmoniController() {
       handleDareToRisk, setTimerDuration,
       rollDice: () => { }
     },
-    // --- LOCAL ASSETS (Verified) ---
     data: {
-      destinations: [
-        {
-          id: 'moon',
-          name: 'Moonlit Garden',
-          image: '/assets/jonathan-borba-Fa8xXVzkkXc-unsplash.jpg',
-          youtubeId: "LcDjP3cdk0g"
-        },
-        {
-          id: 'royal',
-          name: 'Royal Kingdom',
-          image: '/assets/noukka-signe-s90wTklH2to-unsplash.jpg',
-          youtubeId: "8O-1qB-fxjc"
-        },
-        {
-          id: 'nature',
-          name: 'Nature Walk',
-          image: 'x,
-          youtubeId: "MqDODqQO0FI"
-        }
-      ]
+      destinations // Exported from constant
     }
   };
 }
