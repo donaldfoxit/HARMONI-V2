@@ -57,14 +57,13 @@ const JourneyInterface = ({
                     <motion.h1
                         key={questionText}
                         animate={{
-                            y: [0, -15, 0],   // Moves up 15px then down
-                            rotate: [0, 1, 0, -1, 0] // Very subtle rotation for "floating" feel
+                            scale: [1, 1.02, 1],
+                            opacity: [1, 0.85, 1]
                         }}
                         transition={{
-                            duration: 6,
+                            duration: 5,
                             ease: "easeInOut",
                             repeat: Infinity,
-                            repeatType: "mirror"
                         }}
                         className="font-playfair text-4xl md:text-6xl lg:text-7xl leading-tight text-white drop-shadow-2xl"
                     >
@@ -74,30 +73,47 @@ const JourneyInterface = ({
             </div>
 
             {/* Controls */}
-            <div className="absolute bottom-20 left-0 w-full flex justify-center items-center gap-8 md:gap-16 z-40">
-                {/* Risk It - Fire Style */}
-                <button
+            <div className="absolute bottom-20 left-0 w-full flex justify-center items-center gap-8 md:gap-12 z-40">
+
+                {/* RISK IT - Smoldering Glass */}
+                <motion.button
+                    whileHover={{ scale: 1.05 }}
+                    whileTap={{ scale: 0.95 }}
                     onClick={() => actions.setShowRiskyQuestion(true)}
-                    className="px-8 py-3 bg-red-900/20 border border-red-500 text-red-500 font-bold tracking-widest uppercase hover:bg-red-600 hover:text-white transition-all shadow-[0_0_20px_rgba(239,68,68,0.6)] hover:shadow-[0_0_50px_rgba(239,68,68,1)]"
+                    className="group relative px-6 py-3 overflow-hidden rounded-full bg-red-950/30 border border-red-500/30 backdrop-blur-md transition-all duration-500 hover:border-red-500/60 hover:shadow-[0_0_30px_rgba(220,38,38,0.4)]"
                 >
-                    🔥 RISK IT
-                </button>
+                    <div className="absolute inset-0 bg-red-500/10 opacity-0 group-hover:opacity-100 transition-opacity duration-500 blur-xl" />
+                    <span className="relative flex items-center gap-2 font-montserrat text-xs tracking-[0.2em] text-red-400 group-hover:text-red-100 transition-colors uppercase">
+                        <Flame className="w-4 h-4" /> Risk It
+                    </span>
+                </motion.button>
 
-                {/* Continue - Main Action */}
-                <button
+                {/* CONTINUE JOURNEY - Ethereal Prism */}
+                <motion.button
                     onClick={onNext}
-                    className="bg-transparent border border-white/20 text-white font-playfair italic text-xl px-12 py-4 rounded-full hover:bg-white hover:text-black hover:border-white hover:scale-105 transition-all duration-500 shadow-[0_0_20px_rgba(0,0,0,0.5)]"
+                    whileHover={{ scale: 1.02 }}
+                    whileTap={{ scale: 0.98 }}
+                    className="relative group px-14 py-5 rounded-full"
                 >
-                    CONTINUE JOURNEY
-                </button>
+                    {/* Glass Background */}
+                    <div className="absolute inset-0 bg-gradient-to-b from-white/10 to-transparent rounded-full backdrop-blur-xl border border-white/20 shadow-[0_0_20px_rgba(255,255,255,0.05)] transition-all duration-500 group-hover:border-white/40 group-hover:shadow-[0_0_50px_rgba(255,255,255,0.2)]" />
 
-                {/* Bonding - Subtle Style */}
-                <button
+                    {/* Text */}
+                    <span className="relative font-playfair italic text-2xl text-white tracking-wide group-hover:tracking-widest transition-all duration-500 drop-shadow-lg">
+                        Continue Journey
+                    </span>
+                </motion.button>
+
+                {/* BOND - Mystic Star */}
+                <motion.button
                     onClick={onBond}
-                    className="flex items-center gap-2 text-blue-400 hover:text-blue-200 transition-colors font-montserrat tracking-[0.2em] text-sm uppercase hover:scale-110 transition-transform"
+                    whileHover={{ scale: 1.1, rotate: 5 }}
+                    whileTap={{ scale: 0.9 }}
+                    className="group relative p-4 rounded-full bg-blue-900/20 border border-blue-400/20 backdrop-blur-md hover:bg-blue-800/30 hover:border-blue-400/50 transition-all shadow-[0_0_15px_rgba(96,165,250,0.1)] hover:shadow-[0_0_30px_rgba(96,165,250,0.3)]"
                 >
-                    <Heart className="w-5 h-5" /> Bond
-                </button>
+                    <Heart className="w-5 h-5 text-blue-300 group-hover:text-white transition-colors" />
+                </motion.button>
+
             </div>
 
             {/* MODALS - CASINO FLIP STYLE */}
