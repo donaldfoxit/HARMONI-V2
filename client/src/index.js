@@ -12,7 +12,7 @@ console.log('🟢 createRoot successful');
 
 root.render(
   <React.StrictMode>
-    <ReactLenis root options={{ lerp: 0.15, duration: 1.2, smoothWheel: true, wheelMultiplier: 1.5 }}>
+    <ReactLenis root options={{ lerp: 0.15, duration: 1.2, smoothWheel: true, wheelMultiplier: 1.5, touchMultiplier: 2 }}>
       <ErrorBoundary>
         <App />
       </ErrorBoundary>

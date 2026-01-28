@@ -1,6 +1,8 @@
 import React, { useRef, useEffect } from 'react';
 import { motion, useScroll, useTransform } from 'framer-motion';
 
+const HOME_BG = "/assets/home-bg.jpg";
+
 const HeroSection = ({ onEnter }) => {
     const ref = useRef(null);
     const { scrollYProgress } = useScroll({
@@ -11,8 +13,6 @@ const HeroSection = ({ onEnter }) => {
     const scale = useTransform(scrollYProgress, [0, 1], [1, 1.5]);
     const opacity = useTransform(scrollYProgress, [0, 0.8], [1, 0]);
     const yText = useTransform(scrollYProgress, [0, 1], ["0%", "50%"]);
-
-    // REMOVED WHEEL LISTENER FOR NATIVE SCROLL
 
     return (
         <section
@@ -28,11 +28,15 @@ const HeroSection = ({ onEnter }) => {
             </motion.div>
 
             <motion.div
-                style={{ scale, opacity }}
-                className="absolute inset-0 z-0 bg-[url('https://images.unsplash.com/photo-1534447677768-be436bb09401?q=80&w=2894&auto=format&fit=crop')] bg-cover bg-center opacity-40 blur-[2px] pointer-events-none"
+                style={{
+                    scale,
+                    opacity,
+                    backgroundImage: `url('${HOME_BG}')`
+                }}
+                className="absolute inset-0 z-0 bg-cover bg-center opacity-40 pointer-events-none will-change-transform"
             />
 
-            <div className="absolute inset-0 z-[1] bg-[url('https://images.unsplash.com/photo-1519074069444-1ba4fff66d16?q=80&w=2787&auto=format&fit=crop')] bg-cover bg-center opacity-30 blur-[4px] pointer-events-none" />
+            <div className="absolute inset-0 z-[1] bg-[url('https://images.unsplash.com/photo-1519074069444-1ba4fff66d16?q=80&w=2787&auto=format&fit=crop')] bg-cover bg-center opacity-30 pointer-events-none will-change-transform" />
 
             {/* Content */}
             <motion.div

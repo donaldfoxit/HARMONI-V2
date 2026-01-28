@@ -11,16 +11,14 @@ const JourneyInterface = ({
     actions
 }) => {
     const {
-        currentQuestion,
-        currentRoundQuestions,
+        currentQuestionData, // New prop from restored controller
         showRiskyQuestion,
         currentRiskyQuestion,
         showBondingPrompt,
         currentBondingPrompt
     } = data;
 
-    const questionObj = currentRoundQuestions && currentRoundQuestions[currentQuestion];
-    const questionText = questionObj?.q || "Breathe...";
+    const questionText = currentQuestionData?.q || "Breathe...";
 
     // Animation variants
     const textVariants = {
