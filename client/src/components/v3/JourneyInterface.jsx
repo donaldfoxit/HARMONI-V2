@@ -11,20 +11,29 @@ const JourneyInterface = ({
     actions
 }) => {
     const {
-        currentQuestionData, // New prop from restored controller
+        currentQuestionData,
         showRiskyQuestion,
         currentRiskyQuestion,
-        showBondingPrompt,
-        currentBondingPrompt
     } = data;
 
     const questionText = currentQuestionData?.q || "Breathe...";
 
-    // Animation variants
-    const textVariants = {
-        initial: { opacity: 0, y: 10, filter: "blur(5px)" },
-        animate: { opacity: 1, y: 0, filter: "blur(0px)" },
-        exit: { opacity: 0, y: -10, filter: "blur(5px)" }
+    // TYPEWRITER ANIMATION VARIANTS
+    const sentenceVariants = {
+        hidden: { opacity: 1 },
+        visible: {
+            opacity: 1,
+            transition: {
+                delay: 0.2,
+                staggerChildren: 0.04 // Speed of typing
+            }
+        },
+        exit: { opacity: 0, transition: { duration: 0.5 } }
+    };
+
+    const letterVariants = {
+        hidden: { opacity: 0, y: 10, filter: "blur(8px)" },
+        visible: { opacity: 1, y: 0, filter: "blur(0px)" }
     };
 
     const cardVariants = {
@@ -51,23 +60,30 @@ const JourneyInterface = ({
                 <Home className="w-6 h-6 group-hover:scale-110 transition-transform" />
             </button>
 
-            {/* Main Question Display */}
+            {/* Main Question Display - TYPEWRITER EFFECT */}
             <div className="relative z-10 px-8 max-w-5xl text-center min-h-[40vh] flex items-center justify-center">
                 <AnimatePresence mode="wait">
                     <motion.h1
                         key={questionText}
-                        animate={{
-                            scale: [1, 1.02, 1],
-                            opacity: [1, 0.85, 1]
-                        }}
-                        transition={{
-                            duration: 5,
-                            ease: "easeInOut",
-                            repeat: Infinity,
-                        }}
-                        className="font-playfair text-4xl md:text-6xl lg:text-7xl leading-tight text-white drop-shadow-2xl"
+                        variants={sentenceVariants}
+                        initial="hidden"
+                        animate="visible"
+                        exit="exit"
+                        className="font-playfair text-4xl md:text-6xl lg:text-7xl leading-tight text-white drop-shadow-2xl flex flex-wrap justify-center gap-x-2 md:gap-x-4"
                     >
-                        "{questionText}"
+                        {questionText.split(" ").map((word, wIndex) => (
+                            <span key={wIndex} className="inline-block whitespace-nowrap">
+                                {word.split("").map((char, cIndex) => (
+                                    <motion.span
+                                        key={`${wIndex}-${cIndex}`}
+                                        variants={letterVariants}
+                                        className="inline-block"
+                                    >
+                                        {char}
+                                    </motion.span>
+                                ))}
+                            </span>
+                        ))}
                     </motion.h1>
                 </AnimatePresence>
             </div>
@@ -116,9 +132,8 @@ const JourneyInterface = ({
 
             </div>
 
-            {/* MODALS - CASINO FLIP STYLE */}
+            {/* MODALS */}
             <AnimatePresence>
-
                 {/* Risk Modal */}
                 {showRiskyQuestion && (
                     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm perspective-1000">
@@ -150,55 +165,8 @@ const JourneyInterface = ({
                         </motion.div>
                     </div>
                 )}
-
-                {/* OLD BONDING MODAL REMOVED - REPLACED BY BONDING DICEMODAL IN APP.JS */}
-
             </AnimatePresence>
-
         </motion.div>
-    );
-};
-
-const Sparkles = () => {
-    // Generate random positions for sparkles
-    const sparkles = Array.from({ length: 25 }).map((_, i) => ({
-        id: i,
-        top: `${Math.random() * 100}%`,
-        left: `${Math.random() * 100}%`,
-        size: Math.random() * 1.5 + 0.5, // 0.5 to 2rem scale roughly
-        delay: Math.random() * 2,
-        duration: Math.random() * 1 + 1
-    }));
-
-    return (
-        <div className="absolute inset-0 pointer-events-none z-20 overflow-visible">
-            {sparkles.map((s) => (
-                <motion.div
-                    key={s.id}
-                    initial={{ opacity: 0, scale: 0 }}
-                    animate={{
-                        opacity: [0, 1, 0],
-                        scale: [0, 1, 0],
-                        rotate: [0, 180]
-                    }}
-                    transition={{
-                        duration: s.duration,
-                        repeat: Infinity,
-                        delay: s.delay,
-                        ease: "easeInOut"
-                    }}
-                    style={{
-                        top: s.top,
-                        left: s.left,
-                    }}
-                    className="absolute text-blue-200 drop-shadow-[0_0_5px_rgba(191,219,254,0.8)]"
-                >
-                    <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor" style={{ transform: `scale(${s.size})` }}>
-                        <path d="M12 0L14.59 9.41L24 12L14.59 14.59L12 24L9.41 14.59L0 12L9.41 9.41L12 0Z" />
-                    </svg>
-                </motion.div>
-            ))}
-        </div>
     );
 };
 

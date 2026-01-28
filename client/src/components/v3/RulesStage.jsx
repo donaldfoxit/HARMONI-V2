@@ -82,11 +82,12 @@ const RulesStage = ({ onConfirm }) => (
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         exit={{ opacity: 0 }}
-        className="relative w-full min-h-screen z-50 flex flex-col items-center justify-center text-center p-8 bg-black/95 backdrop-blur-xl overflow-hidden"
+        className="relative w-full min-h-screen z-50 flex flex-col items-center justify-center text-center p-8 bg-[#000105] overflow-hidden"
     >
-        <Stickers />
+        {/* Subtle Gradient (Point 2) */}
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,_var(--tw-gradient-stops))] from-neutral-900/20 to-[#000105] pointer-events-none" />
 
-        <div className="relative max-w-3xl border border-blue-900/30 p-12 rounded-2xl bg-black/50 shadow-[0_0_50px_rgba(0,102,255,0.1)] z-10 backdrop-blur-sm">
+        <div className="relative max-w-3xl border border-blue-900/30 p-12 rounded-2xl bg-black/50 shadow-[0_0_50px_rgba(0,102,255,0.05)] z-10 backdrop-blur-sm">
             <Sparkles />
             <h2 className="font-playfair text-4xl md:text-6xl mb-8 text-accent">The Covenant</h2>
             <p className="text-xl md:text-2xl text-gray-300 mb-12 leading-relaxed font-montserrat font-light">
