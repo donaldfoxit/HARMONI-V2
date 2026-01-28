@@ -79,7 +79,7 @@ const JourneyInterface = ({
                 <motion.button
                     whileHover={{ scale: 1.05 }}
                     whileTap={{ scale: 0.95 }}
-                    onClick={() => actions.setShowRiskyQuestion(true)}
+                    onClick={() => actions.handleDareToRisk()}
                     className="group relative px-6 py-3 overflow-hidden rounded-full bg-red-950/30 border border-red-500/30 backdrop-blur-md transition-all duration-500 hover:border-red-500/60 hover:shadow-[0_0_30px_rgba(220,38,38,0.4)]"
                 >
                     <div className="absolute inset-0 bg-red-500/10 opacity-0 group-hover:opacity-100 transition-opacity duration-500 blur-xl" />
