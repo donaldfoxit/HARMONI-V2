@@ -1,35 +1,33 @@
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import { useLenis } from "@studio-freight/react-lenis";
 import { useHarmoniController } from './hooks/useHarmoniController';
-import { YouTubePlayer } from './components/audio/YouTubePlayer';
 
-// V3 Components
+// Components
 import HeroSection from "./components/v3/HeroSection";
 import RulesStage from "./components/v3/RulesStage";
 import SetupStage from "./components/v3/SetupStage";
 import JourneyInterface from "./components/v3/JourneyInterface";
 import BondingDiceModal from "./components/v3/BondingDiceModal";
-
-// Global Effects
+import LoadingScreen from "./components/v3/LoadingScreen";
+import AffirmationStage from "./components/v3/AffirmationStage";
+import MusicPlayer from "./components/v3/MusicPlayer";
+import EntryScreen from "./components/v3/EntryScreen";
 import NoiseOverlay from "./components/effects/NoiseOverlay";
 
 const GlowBorder = () => (
   <div className="fixed top-0 left-0 w-screen h-screen pointer-events-none z-50 shadow-[inset_0_0_150px_rgba(0,0,0,0.9)] opacity-80" />
 );
 
-
-
 export default function App() {
+  const [hasEntered, setHasEntered] = useState(false);
+  const [loading, setLoading] = useState(true);
+  const [rulesAgreed, setRulesAgreed] = useState(false);
+  const [showAffirmation, setShowAffirmation] = useState(false);
+  const [musicEnabled, setMusicEnabled] = useState(false);
   const lenis = useLenis();
+  const { gameState: state, actions, data } = useHarmoniController();
 
-  const {
-    gameState: state,
-    actions,
-    data
-  } = useHarmoniController();
-
-  // Scroll Reset Logic (Restored)
   useEffect(() => {
     if ((state.stage === 'welcome' || state.stage === 'complete') && lenis) {
       window.scrollTo(0, 0);
@@ -37,76 +35,121 @@ export default function App() {
     }
   }, [state.stage, lenis]);
 
-  // Merge destinations
   const combinedState = { ...state, destinations: data.destinations };
 
+  // Handle entry - start music 3s after tap
+  const handleEntry = () => {
+    setHasEntered(true);
+    setTimeout(() => setMusicEnabled(true), 3000);
+  };
+
+  // Handle rules agreement
+  const handleRulesAgreed = () => {
+    setRulesAgreed(true);
+  };
+
+  // Handle journey initiation with affirmation
+  const handleInitiateWithAffirmation = () => {
+    setShowAffirmation(true);
+  };
+
+  const handleAffirmationComplete = () => {
+    setShowAffirmation(false);
+    actions.startJourney();
+  };
+
   return (
-    <div className="main-container relative w-full flex flex-col bg-[#000105]">
-      <GlowBorder />
-      <NoiseOverlay opacity={0.04} />
+    <>
+      {/* Entry Screen - First thing user sees */}
+      <AnimatePresence mode="wait">
+        {!hasEntered && <EntryScreen onEnter={handleEntry} />}
+      </AnimatePresence>
 
-      {/* SECTION 1: HERO (Top) */}
-      <section id="hero" className="relative w-full min-h-screen z-30 flex flex-col">
-        <HeroSection onEnter={() => document.getElementById('rules').scrollIntoView({ behavior: 'smooth' })} />
-        {/* Navigation Prompt */}
-        <div className="absolute bottom-10 w-full text-center z-50 pointer-events-none">
-          <p className="text-xs tracking-[0.5em] opacity-50 animate-pulse text-white">SCROLL TO BEGIN</p>
-        </div>
-      </section>
+      {/* Loading Screen - After entry */}
+      <AnimatePresence mode="wait">
+        {hasEntered && loading && <LoadingScreen onComplete={() => setLoading(false)} />}
+      </AnimatePresence>
 
-      {/* SECTION 2: RULES (Attached directly below Hero) */}
-      <section id="rules" className="relative w-full min-h-screen z-30 bg-[#000105]">
-        <RulesStage onConfirm={() => document.getElementById('setup').scrollIntoView({ behavior: 'smooth' })} />
-      </section>
-
-      {/* SECTION 3: SETUP (Attached directly below Rules) */}
-      <section id="setup" className="relative w-full min-h-screen z-30 bg-[#000105]">
-        <SetupStage
-          destinations={data.destinations.slice(0, 3)}
-          onSelectDest={actions.setDestination}
-          onSelectTime={actions.setTimerDuration}
-          onInitiate={actions.startJourney}
-        />
-      </section>
-
-      {/* GAME LAYER: Only appears when stage === 'journey' */}
-      <AnimatePresence>
-        {state.stage === 'journey' && (
-          <motion.div
-            key="journey-overlay"
-            initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
-            className="fixed inset-0 z-[999] bg-black"
-          >
-            <JourneyInterface
-              data={combinedState}
-              onNext={actions.handleContinue}
-              onHome={() => actions.setStage('welcome')}
-              onRisk={actions.handleDareToRisk}
-              onBond={actions.rollDice}
-              actions={actions}
-            />
-          </motion.div>
-        )}
-
-        {state.showBondingPrompt && (
-          <BondingDiceModal
-            prompt={state.currentBondingPrompt || { text: "Hold eye contact for 30 seconds." }}
-            onClose={() => actions.setShowBondingPrompt(false)}
-          />
+      {/* Rules Overlay - Must agree before proceeding */}
+      <AnimatePresence mode="wait">
+        {hasEntered && !loading && !rulesAgreed && (
+          <RulesStage onConfirm={handleRulesAgreed} />
         )}
       </AnimatePresence>
 
-      {
-        state.stage === 'complete' && (
-          <motion.div className="fixed inset-0 z-[999] bg-black flex items-center justify-center">
-            <h1 className="text-5xl font-playfair text-white">Journey Complete</h1>
-          </motion.div>
-        )
-      }
+      {/* Affirmation Stage - Shows after setup, before journey */}
+      <AnimatePresence mode="wait">
+        {showAffirmation && (
+          <AffirmationStage onComplete={handleAffirmationComplete} />
+        )}
+      </AnimatePresence>
 
-      <div className="fixed bottom-0 left-0 opacity-0 pointer-events-none">
-        <YouTubePlayer playing={state.audioPlaying} videoId={state.destination?.youtubeId || "LcDjP3cdk0g"} />
-      </div>
-    </div >
+      {/* Main App - Only visible after rules agreed */}
+      {hasEntered && !loading && rulesAgreed && (
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ duration: 1.5, ease: "easeOut" }}
+          className="main-container relative w-full flex flex-col bg-[#000105]"
+        >
+          <GlowBorder />
+          <NoiseOverlay opacity={0.04} />
+          <MusicPlayer autoStart={musicEnabled} />
+
+          {/* SECTION 1: HERO */}
+          <section id="hero" className="relative w-full min-h-screen z-30 flex flex-col">
+            <HeroSection onEnter={() => document.getElementById('setup').scrollIntoView({ behavior: 'smooth' })} />
+          </section>
+
+          {/* SECTION 2: SETUP */}
+          <section id="setup" className="relative w-full min-h-screen z-30 bg-[#000105]">
+            <SetupStage
+              destinations={data.destinations.slice(0, 3)}
+              onSelectDest={actions.setDestination}
+              onSelectTime={actions.setTimerDuration}
+              onInitiate={handleInitiateWithAffirmation}
+            />
+          </section>
+
+          {/* GAME OVERLAY - Soft Transitions */}
+          <AnimatePresence mode="wait">
+            {state.stage === 'journey' && (
+              <motion.div
+                key="journey-overlay"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                transition={{ duration: 0.8, ease: "easeInOut" }}
+                className="fixed inset-0 z-[999] bg-[#000105]"
+              >
+                <JourneyInterface
+                  data={combinedState}
+                  onNext={actions.handleContinue}
+                  onHome={() => {
+                    actions.setStage('welcome');
+                    setTimeout(() => {
+                      window.scrollTo({ top: 0, behavior: 'smooth' });
+                    }, 100);
+                  }}
+                  onRisk={actions.handleDareToRisk}
+                  onBond={actions.rollDice}
+                  actions={actions}
+                />
+              </motion.div>
+            )}
+          </AnimatePresence>
+
+          {/* Bonding Modal */}
+          <AnimatePresence>
+            {state.showBondingPrompt && (
+              <BondingDiceModal
+                prompt={state.currentBondingPrompt || { text: "Hold eye contact for 30 seconds." }}
+                onClose={() => actions.setShowBondingPrompt(false)}
+              />
+            )}
+          </AnimatePresence>
+        </motion.div>
+      )}
+    </>
   );
 }

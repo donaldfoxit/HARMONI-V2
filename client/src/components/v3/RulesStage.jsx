@@ -1,111 +1,200 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 
-const Stickers = () => (
-    <div className="absolute inset-0 overflow-hidden pointer-events-none z-0">
-        {/* Sticker 1: Holding Hands - Top Left */}
-        <motion.div
-            initial={{ opacity: 0, rotate: -10 }}
-            whileInView={{ opacity: 0.15 }} // Faint
-            viewport={{ once: true }}
-            className="absolute top-[10%] left-[5%] md:left-[15%] w-40 md:w-56 aspect-[3/4] p-2 bg-white/5 border border-white/10 rotate-[-6deg] shadow-2xl"
-        >
-            <img
-                src="https://images.unsplash.com/photo-1623940698188-4e311a22144b?auto=format&fit=crop&w=400&q=80"
-                alt="Intimacy"
-                className="w-full h-full object-cover grayscale opacity-80"
-            />
-        </motion.div>
-
-        {/* Sticker 2: Couple Talking/Laughing - Bottom Right */}
-        <motion.div
-            initial={{ opacity: 0, rotate: 10 }}
-            whileInView={{ opacity: 0.15 }}
-            viewport={{ once: true }}
-            className="absolute bottom-[15%] right-[5%] md:right-[15%] w-48 md:w-64 aspect-square p-2 bg-white/5 border border-white/10 rotate-[8deg] shadow-2xl"
-        >
-            <img
-                src="https://images.unsplash.com/photo-1516589178581-6cd7833ae3b2?auto=format&fit=crop&w=400&q=80"
-                alt="Connection"
-                className="w-full h-full object-cover grayscale opacity-80"
-            />
-        </motion.div>
-
-        {/* Sticker 3: Embrace/Trust - Top Right (Floating) */}
-        <motion.div
-            initial={{ opacity: 0, scale: 0.8 }}
-            whileInView={{ opacity: 0.12 }}
-            viewport={{ once: true }}
-            className="absolute top-[20%] right-[10%] w-32 md:w-48 aspect-video p-2 bg-white/5 border border-white/10 rotate-[12deg] shadow-2xl"
-        >
-            <img
-                src="https://images.unsplash.com/photo-1529333441280-0a602d92a871?auto=format&fit=crop&w=400&q=80"
-                alt="Trust"
-                className="w-full h-full object-cover grayscale opacity-80"
-            />
-        </motion.div>
-    </div>
-);
-
-const Sparkles = () => {
-    const sparkles = Array.from({ length: 20 }).map((_, i) => ({
+// Floating ethereal particles - Subtle
+const DreamParticles = () => {
+    const particles = Array.from({ length: 25 }).map((_, i) => ({
         id: i,
-        top: `${Math.random() * 100}%`,
-        left: `${Math.random() * 100}%`,
-        size: Math.random() * 1.5 + 0.5,
-        delay: Math.random() * 2,
-        duration: Math.random() * 1 + 1
+        x: `${Math.random() * 100}%`,
+        y: `${Math.random() * 100}%`,
+        size: Math.random() * 3 + 2,
+        delay: Math.random() * 5,
+        duration: Math.random() * 12 + 10
     }));
 
     return (
-        <div className="absolute inset-0 pointer-events-none z-20 overflow-visible">
-            {sparkles.map((s) => (
+        <div className="absolute inset-0 overflow-hidden pointer-events-none">
+            {particles.map((p) => (
                 <motion.div
-                    key={s.id}
-                    initial={{ opacity: 0, scale: 0 }}
-                    animate={{ opacity: [0, 0.8, 0], scale: [0, 1, 0] }} // Slightly clearer animate
-                    transition={{ duration: s.duration, repeat: Infinity, delay: s.delay, ease: "easeInOut" }}
-                    style={{ top: s.top, left: s.left }}
-                    className="absolute text-blue-200/60 drop-shadow-[0_0_2px_rgba(191,219,254,0.5)]"
-                >
-                    <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor" style={{ transform: `scale(${s.size})` }}>
-                        <path d="M12 0L14.59 9.41L24 12L14.59 14.59L12 24L9.41 14.59L0 12L9.41 9.41L12 0Z" />
-                    </svg>
-                </motion.div>
+                    key={p.id}
+                    className="absolute rounded-full bg-white/25"
+                    style={{
+                        left: p.x,
+                        width: p.size,
+                        height: p.size,
+                        filter: 'blur(0.5px)'
+                    }}
+                    initial={{ top: '110%', opacity: 0 }}
+                    animate={{
+                        top: '-10%',
+                        opacity: [0, 0.5, 0.4, 0]
+                    }}
+                    transition={{
+                        duration: p.duration,
+                        repeat: Infinity,
+                        delay: p.delay,
+                        ease: 'linear'
+                    }}
+                />
             ))}
         </div>
     );
 };
 
-const RulesStage = ({ onConfirm }) => (
-    <motion.section
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        exit={{ opacity: 0 }}
-        className="relative w-full min-h-screen z-50 flex flex-col items-center justify-center text-center p-8 bg-[#000105] overflow-hidden"
-    >
-        {/* Subtle Gradient (Point 2) */}
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,_var(--tw-gradient-stops))] from-neutral-900/20 to-[#000105] pointer-events-none" />
+const RulesStage = ({ onConfirm }) => {
+    const [partner1Clicked, setPartner1Clicked] = useState(false);
+    const [partner2Clicked, setPartner2Clicked] = useState(false);
 
-        <div className="relative max-w-3xl border border-blue-900/30 p-12 rounded-2xl bg-black/50 shadow-[0_0_50px_rgba(0,102,255,0.05)] z-10 backdrop-blur-sm">
-            <Sparkles />
-            <h2 className="font-playfair text-4xl md:text-6xl mb-8 text-accent">The Covenant</h2>
-            <p className="text-xl md:text-2xl text-gray-300 mb-12 leading-relaxed font-montserrat font-light">
-                To proceed, you must agree to be truthful, open, and vulnerable.
-                <br /><br />
-                <span className="text-blue-200">What you discover here depends entirely on what you bring.</span>
-            </p>
-            <button
-                onClick={onConfirm}
-                className="group relative px-8 py-4 bg-transparent overflow-hidden rounded-full border border-accent/50 hover:border-accent transition-colors cursor-pointer"
-            >
-                <span className="relative z-10 font-montserrat font-bold tracking-[0.3em] text-sm uppercase text-accent group-hover:text-white transition-colors duration-300">
-                    I Am Ready
-                </span>
-                <div className="absolute inset-0 bg-accent transform scale-x-0 group-hover:scale-x-100 transition-transform origin-left duration-300 opacity-20" />
-            </button>
-        </div>
-    </motion.section>
-);
+    const handlePartner1Click = () => {
+        setPartner1Clicked(true);
+        if (partner2Clicked) {
+            setTimeout(() => onConfirm(), 500);
+        }
+    };
+
+    const handlePartner2Click = () => {
+        setPartner2Clicked(true);
+        if (partner1Clicked) {
+            setTimeout(() => onConfirm(), 500);
+        }
+    };
+
+    return (
+        <motion.section
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.8 }}
+            className="relative w-full min-h-screen z-50 flex flex-col items-center justify-center text-center p-8 bg-[#000105] overflow-hidden"
+        >
+            {/* Ambient Glow */}
+            <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,_rgba(99,102,241,0.06)_0%,_transparent_60%)] pointer-events-none" />
+
+            {/* Particles */}
+            <DreamParticles />
+
+            {/* Vignette */}
+            <div className="absolute inset-0 pointer-events-none shadow-[inset_0_0_200px_80px_rgba(0,0,0,0.9)]" />
+
+            {/* Content */}
+            <motion.div className="relative z-10 max-w-xl">
+                {/* Decorative Line */}
+                <motion.div
+                    className="w-12 h-[1px] bg-gradient-to-r from-transparent via-white/30 to-transparent mx-auto mb-12"
+                    initial={{ width: 0 }}
+                    animate={{ width: 48 }}
+                    transition={{ delay: 0.2, duration: 0.8 }}
+                />
+
+                {/* Title */}
+                <motion.h2
+                    className="font-playfair italic text-4xl md:text-5xl text-white/90 mb-6"
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 0.4, duration: 0.6 }}
+                    style={{ textShadow: '0 0 40px rgba(255,255,255,0.15)' }}
+                >
+                    Before We Begin
+                </motion.h2>
+
+                {/* Subtitle */}
+                <motion.p
+                    className="font-montserrat text-xs tracking-[0.4em] text-accent/70 uppercase mb-12"
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    transition={{ delay: 0.6, duration: 0.6 }}
+                >
+                    A Sacred Agreement
+                </motion.p>
+
+                {/* Body Text */}
+                <motion.div
+                    className="space-y-6 mb-16"
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    transition={{ delay: 0.8, duration: 0.8 }}
+                >
+                    <p className="font-playfair text-xl md:text-2xl text-white/60 leading-relaxed italic">
+                        "This is a space for truth, vulnerability, and presence."
+                    </p>
+                    <p className="font-montserrat text-sm md:text-base text-white/40 leading-relaxed max-w-lg mx-auto">
+                        What you share here stays between souls.
+                        <br />Be honest. Be open. Be kind.
+                    </p>
+                </motion.div>
+
+                {/* Two "I Understand" Buttons */}
+                <motion.div
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 1, duration: 0.6 }}
+                    className="flex flex-col items-center"
+                >
+                    <p className="text-white/30 text-xs font-montserrat tracking-wide mb-6">
+                        Both partners must agree to continue
+                    </p>
+                    <div className="flex gap-4 md:gap-6">
+                        {/* Partner 1 Button */}
+                        <motion.button
+                            onClick={handlePartner1Click}
+                            disabled={partner1Clicked}
+                            whileHover={!partner1Clicked ? { scale: 1.02 } : {}}
+                            whileTap={!partner1Clicked ? { scale: 0.98 } : {}}
+                            className={`group relative px-8 md:px-10 py-4 overflow-hidden transition-all duration-500 ${partner1Clicked ? 'opacity-100' : 'opacity-70 hover:opacity-100'
+                                }`}
+                        >
+                            <div className={`absolute inset-0 border rounded-full transition-all duration-500 ${partner1Clicked
+                                    ? 'border-green-400/50 bg-green-400/10'
+                                    : 'border-white/20 group-hover:border-white/40'
+                                }`} />
+                            <span className={`relative font-playfair italic text-base md:text-lg transition-colors duration-300 ${partner1Clicked ? 'text-green-400/80' : 'text-white/70 group-hover:text-white'
+                                }`}>
+                                {partner1Clicked ? '✓ Agreed' : 'I Understand'}
+                            </span>
+                        </motion.button>
+
+                        {/* Partner 2 Button */}
+                        <motion.button
+                            onClick={handlePartner2Click}
+                            disabled={partner2Clicked}
+                            whileHover={!partner2Clicked ? { scale: 1.02 } : {}}
+                            whileTap={!partner2Clicked ? { scale: 0.98 } : {}}
+                            className={`group relative px-8 md:px-10 py-4 overflow-hidden transition-all duration-500 ${partner2Clicked ? 'opacity-100' : 'opacity-70 hover:opacity-100'
+                                }`}
+                        >
+                            <div className={`absolute inset-0 border rounded-full transition-all duration-500 ${partner2Clicked
+                                    ? 'border-green-400/50 bg-green-400/10'
+                                    : 'border-white/20 group-hover:border-white/40'
+                                }`} />
+                            <span className={`relative font-playfair italic text-base md:text-lg transition-colors duration-300 ${partner2Clicked ? 'text-green-400/80' : 'text-white/70 group-hover:text-white'
+                                }`}>
+                                {partner2Clicked ? '✓ Agreed' : 'I Understand'}
+                            </span>
+                        </motion.button>
+                    </div>
+
+                    {/* Progress indicator */}
+                    {(partner1Clicked || partner2Clicked) && !(partner1Clicked && partner2Clicked) && (
+                        <motion.p
+                            initial={{ opacity: 0 }}
+                            animate={{ opacity: 1 }}
+                            className="text-accent/50 text-xs font-montserrat mt-6"
+                        >
+                            Waiting for partner...
+                        </motion.p>
+                    )}
+                </motion.div>
+
+                {/* Decorative Line Bottom */}
+                <motion.div
+                    className="w-16 h-[1px] bg-gradient-to-r from-transparent via-white/20 to-transparent mx-auto mt-16"
+                    initial={{ width: 0 }}
+                    animate={{ width: 64 }}
+                    transition={{ delay: 1.2, duration: 0.8 }}
+                />
+            </motion.div>
+        </motion.section>
+    );
+};
 
 export default RulesStage;
