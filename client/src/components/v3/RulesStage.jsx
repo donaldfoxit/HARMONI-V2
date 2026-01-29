@@ -45,17 +45,38 @@ const RulesStage = ({ onConfirm }) => {
     const [partner1Clicked, setPartner1Clicked] = useState(false);
     const [partner2Clicked, setPartner2Clicked] = useState(false);
 
+    // Play audio 0.5s after screen appears
+    React.useEffect(() => {
+        const timer = setTimeout(() => {
+            const audio = new Audio('/rules-audio.mp3');
+            audio.volume = 0.7;
+            audio.play().catch(() => {
+                console.log('Rules audio blocked by browser');
+            });
+        }, 1000);
+
+        return () => clearTimeout(timer);
+    }, []);
+
     const handlePartner1Click = () => {
         setPartner1Clicked(true);
         if (partner2Clicked) {
-            setTimeout(() => onConfirm(), 500);
+            // Play "agreed" voice
+            const audio = new Audio('/agreed-voice.mp3');
+            audio.volume = 0.8;
+            audio.play().catch(() => console.log('Agreed audio blocked'));
+            setTimeout(() => onConfirm(), 800);
         }
     };
 
     const handlePartner2Click = () => {
         setPartner2Clicked(true);
         if (partner1Clicked) {
-            setTimeout(() => onConfirm(), 500);
+            // Play "agreed" voice
+            const audio = new Audio('/agreed-voice.mp3');
+            audio.volume = 0.8;
+            audio.play().catch(() => console.log('Agreed audio blocked'));
+            setTimeout(() => onConfirm(), 800);
         }
     };
 
@@ -144,8 +165,8 @@ const RulesStage = ({ onConfirm }) => {
                                 }`}
                         >
                             <div className={`absolute inset-0 border rounded-full transition-all duration-500 ${partner1Clicked
-                                    ? 'border-green-400/50 bg-green-400/10'
-                                    : 'border-white/20 group-hover:border-white/40'
+                                ? 'border-green-400/50 bg-green-400/10'
+                                : 'border-white/20 group-hover:border-white/40'
                                 }`} />
                             <span className={`relative font-playfair italic text-base md:text-lg transition-colors duration-300 ${partner1Clicked ? 'text-green-400/80' : 'text-white/70 group-hover:text-white'
                                 }`}>
@@ -163,8 +184,8 @@ const RulesStage = ({ onConfirm }) => {
                                 }`}
                         >
                             <div className={`absolute inset-0 border rounded-full transition-all duration-500 ${partner2Clicked
-                                    ? 'border-green-400/50 bg-green-400/10'
-                                    : 'border-white/20 group-hover:border-white/40'
+                                ? 'border-green-400/50 bg-green-400/10'
+                                : 'border-white/20 group-hover:border-white/40'
                                 }`} />
                             <span className={`relative font-playfair italic text-base md:text-lg transition-colors duration-300 ${partner2Clicked ? 'text-green-400/80' : 'text-white/70 group-hover:text-white'
                                 }`}>

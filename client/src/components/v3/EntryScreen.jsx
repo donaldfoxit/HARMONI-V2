@@ -59,15 +59,16 @@ const EntryScreen = ({ onEnter }) => {
                     transition={{ delay: 1.2, duration: 0.8 }}
                     whileHover={{ scale: 1.02 }}
                     whileTap={{ scale: 0.98 }}
-                    className="group relative px-16 py-6 overflow-hidden"
+                    className="group relative px-16 py-6 rounded-full overflow-hidden"
                 >
                     {/* Button Background */}
                     <div className="absolute inset-0 border border-white/20 rounded-full group-hover:border-white/40 transition-colors duration-500" />
                     <div className="absolute inset-0 bg-white/0 group-hover:bg-white/5 rounded-full transition-colors duration-500" />
 
-                    {/* Shimmer effect */}
+                    {/* Shimmer effect - clipped by parent overflow-hidden */}
                     <motion.div
-                        className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent rounded-full"
+                        className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent"
+                        style={{ borderRadius: 'inherit' }}
                         animate={{ x: ['-150%', '150%'] }}
                         transition={{ duration: 3, repeat: Infinity, ease: "linear" }}
                     />

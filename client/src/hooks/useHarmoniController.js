@@ -282,7 +282,8 @@ export function useHarmoniController() {
       audioPlaying, showBondingPrompt, currentBondingPrompt,
       showRiskyQuestion, currentRiskyQuestion,
       timeRemaining: formatTime(timeRemaining),
-      questions
+      questions,
+      questionsAnswered: questionCounter.current // For Risk button progression
     },
     actions: {
       setStage, setDestination, startJourney, handleContinue,

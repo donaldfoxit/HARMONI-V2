@@ -4,12 +4,13 @@ import { Volume2, VolumeX } from 'lucide-react';
 
 const YOUTUBE_VIDEO_ID = '5F5dgg1eeGE';
 
-const MusicPlayer = ({ autoStart = false }) => {
+const MusicPlayer = ({ autoStart = false, paused = false }) => {
     const [isMuted, setIsMuted] = useState(true);
     const [isReady, setIsReady] = useState(false);
     const [showPrompt, setShowPrompt] = useState(true);
     const playerRef = useRef(null);
     const hasAutoStarted = useRef(false);
+    const wasPlayingBeforePause = useRef(false);
 
     useEffect(() => {
         // Load YouTube IFrame API
@@ -65,6 +66,19 @@ const MusicPlayer = ({ autoStart = false }) => {
             setShowPrompt(false);
         }
     }, [autoStart, isReady]);
+
+    // Handle pause/resume for affirmation stage voice
+    useEffect(() => {
+        if (!playerRef.current || !isReady) return;
+
+        if (paused && !isMuted) {
+            wasPlayingBeforePause.current = true;
+            playerRef.current.mute();
+        } else if (!paused && wasPlayingBeforePause.current) {
+            wasPlayingBeforePause.current = false;
+            playerRef.current.unMute();
+        }
+    }, [paused, isReady, isMuted]);
 
     const toggleMute = () => {
         if (!playerRef.current) return;

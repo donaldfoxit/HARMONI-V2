@@ -34,16 +34,50 @@ const AffirmationStage = ({ onComplete }) => {
     useEffect(() => {
         const contentTimer = setTimeout(() => setShowContent(true), 500);
         const buttonTimer = setTimeout(() => setShowButton(true), 3000);
+
+        // Keep references to audio for cleanup
+        let voiceAudio = null;
+        let ambientAudio = null;
+
+        // Play mystical ambient instrumental (soft, under the voice)
+        const ambientTimer = setTimeout(() => {
+            ambientAudio = new Audio('/remember-ambient.mp3');
+            ambientAudio.volume = 0.4; // Louder background
+            ambientAudio.loop = true;
+            ambientAudio.play().catch(() => {
+                console.log('Ambient audio blocked by browser');
+            });
+        }, 500); // Start early
+
+        // Play mystical voice audio (use ElevenLabs or similar for natural voice)
+        const voiceTimer = setTimeout(() => {
+            voiceAudio = new Audio('/remember-voice.mp3');
+            voiceAudio.volume = 0.8;
+            voiceAudio.play().catch(() => {
+                console.log('Voice audio blocked by browser');
+            });
+        }, 2000); // 1.5s after ambient starts
+
         return () => {
             clearTimeout(contentTimer);
             clearTimeout(buttonTimer);
+            clearTimeout(ambientTimer);
+            clearTimeout(voiceTimer);
+            // Fade out and stop audio on unmount
+            if (ambientAudio) {
+                ambientAudio.pause();
+                ambientAudio.currentTime = 0;
+            }
+            if (voiceAudio) {
+                voiceAudio.pause();
+                voiceAudio.currentTime = 0;
+            }
         };
     }, []);
 
     const affirmations = [
         "Transparency",
         "Honesty",
-        "Vulnerability",
         "Presence"
     ];
 

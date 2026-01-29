@@ -1,6 +1,54 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 
+// Magical sparkle burst effect
+const SparkleEffect = ({ active }) => {
+    if (!active) return null;
+
+    const sparkles = Array.from({ length: 20 }).map((_, i) => ({
+        id: i,
+        angle: (i / 20) * 360,
+        distance: 60 + Math.random() * 80,
+        size: 3 + Math.random() * 4,
+        delay: Math.random() * 0.15,
+    }));
+
+    return (
+        <div className="absolute inset-0 pointer-events-none">
+            {sparkles.map((s) => (
+                <motion.div
+                    key={s.id}
+                    className="absolute left-1/2 top-1/2 rounded-full bg-white"
+                    initial={{
+                        x: 0,
+                        y: 0,
+                        opacity: 1,
+                        scale: 1,
+                        width: s.size,
+                        height: s.size,
+                    }}
+                    animate={{
+                        x: Math.cos(s.angle * Math.PI / 180) * s.distance,
+                        y: Math.sin(s.angle * Math.PI / 180) * s.distance,
+                        opacity: 0,
+                        scale: 0,
+                    }}
+                    transition={{
+                        duration: 0.6,
+                        delay: s.delay,
+                        ease: 'easeOut'
+                    }}
+                    style={{
+                        boxShadow: '0 0 6px 2px rgba(255, 255, 255, 0.8)',
+                        marginLeft: -s.size / 2,
+                        marginTop: -s.size / 2,
+                    }}
+                />
+            ))}
+        </div>
+    );
+};
+
 // Ethereal floating orbs - Subtle
 const DreamOrbs = () => (
     <div className="absolute inset-0 overflow-hidden pointer-events-none">
@@ -34,10 +82,25 @@ const SetupStage = ({ destinations, onSelectDest, onSelectTime, onInitiate }) =>
     const [selectedTime, setSelectedTime] = useState(null);
     const [selectedDestId, setSelectedDestId] = useState(null);
     const [hoveredDest, setHoveredDest] = useState(null);
+    const [showSparkle, setShowSparkle] = useState(false);
+
+    const handleBeginJourney = () => {
+        setShowSparkle(true);
+        setTimeout(() => {
+            onInitiate();
+        }, 600);
+    };
 
     const handleDestSelect = (dest) => {
         setSelectedDestId(dest.name);
         onSelectDest(dest);
+        // Smooth scroll to timer section after brief delay for dreamy feel
+        setTimeout(() => {
+            const timerSection = document.getElementById('timer-section');
+            if (timerSection) {
+                timerSection.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            }
+        }, 400);
     };
 
     const handleTimeSelect = (time) => {
@@ -183,6 +246,7 @@ const SetupStage = ({ destinations, onSelectDest, onSelectTime, onInitiate }) =>
 
                 {/* Duration Selection */}
                 <motion.div
+                    id="timer-section"
                     className="text-center mb-12"
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
@@ -216,7 +280,7 @@ const SetupStage = ({ destinations, onSelectDest, onSelectTime, onInitiate }) =>
 
                 {/* Initiate Button */}
                 <motion.button
-                    onClick={onInitiate}
+                    onClick={handleBeginJourney}
                     disabled={!canStart}
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
@@ -241,6 +305,9 @@ const SetupStage = ({ destinations, onSelectDest, onSelectTime, onInitiate }) =>
                     {canStart && (
                         <div className="absolute inset-0 rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-500 shadow-[0_0_40px_rgba(255,255,255,0.2)]" />
                     )}
+
+                    {/* Sparkle Effect */}
+                    <SparkleEffect active={showSparkle} />
 
                     {/* Text */}
                     <span className={`relative font-playfair italic text-xl transition-colors duration-300

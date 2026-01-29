@@ -2,54 +2,15 @@ import React from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Home, Flame, Heart } from 'lucide-react';
 
-// Ethereal floating particles - Subtle
-const DreamParticles = () => (
-    <div className="absolute inset-0 overflow-hidden pointer-events-none">
-        {[...Array(30)].map((_, i) => (
-            <motion.div
-                key={i}
-                className="absolute rounded-full"
-                style={{
-                    left: `${Math.random() * 100}%`,
-                    width: Math.random() * 3 + 2,
-                    height: Math.random() * 3 + 2,
-                    background: `radial-gradient(circle, rgba(255,255,255,${Math.random() * 0.3 + 0.2}) 0%, transparent 70%)`
-                }}
-                initial={{ top: '105%', opacity: 0 }}
-                animate={{
-                    top: '-5%',
-                    opacity: [0, 0.5, 0.4, 0]
-                }}
-                transition={{
-                    duration: Math.random() * 18 + 14,
-                    repeat: Infinity,
-                    delay: Math.random() * 10,
-                    ease: 'linear'
-                }}
-            />
-        ))}
-    </div>
-);
-
-// Ambient orb glow
-const AmbientOrb = ({ color, position, size, blur }) => (
-    <div
-        className="absolute rounded-full pointer-events-none"
-        style={{
-            background: color,
-            width: size,
-            height: size,
-            filter: `blur(${blur})`,
-            ...position
-        }}
-    />
-);
+// ============================================
+// CINEMATIC QUESTION PAGE
+// Inspired by Iron Hill & The Goonies aesthetics
+// ============================================
 
 const JourneyInterface = ({
     data,
     onNext,
     onHome,
-    onRisk,
     onBond,
     actions
 }) => {
@@ -57,311 +18,224 @@ const JourneyInterface = ({
         currentQuestionData,
         showRiskyQuestion,
         currentRiskyQuestion,
+        questionsAnswered = 0,
     } = data;
 
     const questionText = currentQuestionData?.q || "Breathe...";
 
-    // Typewriter Animation
-    const sentenceVariants = {
-        hidden: { opacity: 1 },
-        visible: {
-            opacity: 1,
-            transition: {
-                delay: 0.3,
-                staggerChildren: 0.04
-            }
-        },
-        exit: { opacity: 0, filter: "blur(10px)", transition: { duration: 0.6 } }
-    };
-
-    const letterVariants = {
-        hidden: { opacity: 0, y: 20, filter: "blur(12px)" },
-        visible: {
-            opacity: 1,
-            y: 0,
-            filter: "blur(0px)",
-            transition: { duration: 0.3 }
-        }
-    };
-
-    // Subtle wave animation for each word after typewriter completes
-    const wordWaveVariants = {
-        animate: (i) => ({
-            y: [0, -3, 0, 2, 0],
-            transition: {
-                duration: 4,
-                repeat: Infinity,
-                delay: i * 0.15,
-                ease: "easeInOut"
-            }
-        })
-    };
-
-    const cardVariants = {
-        initial: { rotateY: 90, scale: 0.8, opacity: 0 },
-        animate: { rotateY: 0, scale: 1, opacity: 1 },
-        exit: { rotateY: -90, scale: 0.8, opacity: 0 }
-    };
+    // Risk glow activation
+    const isRiskGlowing = questionsAnswered >= 5;
 
     return (
         <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            transition={{ duration: 0.8 }}
-            className="h-screen w-full flex flex-col items-center justify-center relative bg-[#000105] overflow-hidden"
+            transition={{ duration: 1, ease: [0.25, 0.1, 0.25, 1] }}
+            className="fixed inset-0 bg-[#030208] flex flex-col items-center justify-center overflow-hidden"
         >
-            {/* Ambient Background Glows */}
-            <AmbientOrb
-                color="radial-gradient(circle, rgba(99, 102, 241, 0.12) 0%, transparent 70%)"
-                position={{ top: '-10%', left: '20%' }}
-                size="600px"
-                blur="80px"
-            />
-            <AmbientOrb
-                color="radial-gradient(circle, rgba(139, 92, 246, 0.08) 0%, transparent 70%)"
-                position={{ bottom: '10%', right: '10%' }}
-                size="500px"
-                blur="100px"
-            />
-            <AmbientOrb
-                color="radial-gradient(circle, rgba(59, 130, 246, 0.06) 0%, transparent 70%)"
-                position={{ top: '40%', left: '-10%' }}
-                size="400px"
-                blur="60px"
+            {/* === BACKGROUND LAYERS === */}
+
+            {/* Base gradient */}
+            <div className="absolute inset-0 bg-gradient-to-b from-[#0a0612] via-[#030208] to-[#000105]" />
+
+            {/* Subtle radial glow */}
+            <div className="absolute inset-0 bg-[radial-gradient(ellipse_80%_50%_at_50%_40%,_rgba(88,28,135,0.08)_0%,_transparent_60%)]" />
+
+            {/* Film grain overlay */}
+            <div
+                className="absolute inset-0 opacity-[0.025] pointer-events-none mix-blend-overlay"
+                style={{
+                    backgroundImage: `url("data:image/svg+xml,%3Csvg viewBox='0 0 512 512' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E")`,
+                }}
             />
 
-            {/* Floating Particles */}
-            <DreamParticles />
+            {/* Heavy vignette for cinema feel */}
+            <div className="absolute inset-0 shadow-[inset_0_0_300px_100px_rgba(0,0,0,0.9)] pointer-events-none" />
 
-            {/* Cinematic Vignette */}
-            <div className="absolute inset-0 pointer-events-none shadow-[inset_0_0_250px_100px_rgba(0,0,0,0.8)] z-30" />
 
-            {/* Home Button - Refined */}
+            {/* === HOME BUTTON === */}
             <motion.button
                 onClick={onHome}
-                initial={{ opacity: 0, x: -20 }}
-                animate={{ opacity: 1, x: 0 }}
-                transition={{ delay: 0.5, duration: 0.6 }}
-                whileHover={{ scale: 1.1 }}
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ delay: 0.8, duration: 0.6 }}
+                whileHover={{ scale: 1.1, rotate: -90 }}
                 whileTap={{ scale: 0.95 }}
-                className="absolute top-10 left-10 p-4 rounded-full border border-white/10 hover:border-white/30 text-white/40 hover:text-white/80 transition-all duration-500 z-50 backdrop-blur-sm bg-white/5 group"
+                className="absolute top-8 left-8 md:top-12 md:left-12 p-3 rounded-full text-white/20 hover:text-white/60 transition-colors duration-500 z-50"
             >
-                <Home className="w-5 h-5 transition-transform duration-300" />
+                <Home className="w-5 h-5" />
             </motion.button>
 
-            {/* Main Question Display with Typewriter + Wavy Animation */}
-            <div className="relative z-20 px-8 max-w-5xl text-center min-h-[35vh] flex items-center justify-center">
+
+            {/* === MAIN QUESTION - THE HERO === */}
+            <div className="relative z-30 w-full max-w-5xl px-6 md:px-12">
                 <AnimatePresence mode="wait">
                     <motion.div
                         key={questionText}
-                        variants={sentenceVariants}
-                        initial="hidden"
-                        animate="visible"
-                        exit="exit"
-                        className="font-playfair italic text-4xl md:text-6xl lg:text-7xl leading-relaxed text-white/90 flex flex-wrap justify-center gap-x-3 md:gap-x-5"
-                        style={{ textShadow: '0 0 60px rgba(255,255,255,0.15)' }}
+                        initial={{ opacity: 0, y: 40 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        exit={{ opacity: 0, y: -30 }}
+                        transition={{
+                            duration: 0.8,
+                            ease: [0.25, 0.1, 0.25, 1]
+                        }}
+                        className="text-center"
                     >
-                        {questionText.split(" ").map((word, wIndex) => (
-                            <motion.span
-                                key={wIndex}
-                                className="inline-block whitespace-nowrap"
-                                animate={{
-                                    y: [0, -3, 0, 2, 0]
-                                }}
-                                transition={{
-                                    duration: 5,
-                                    repeat: Infinity,
-                                    ease: "easeInOut",
-                                    delay: 1.5 + (wIndex * 0.2) // Wait for typewriter, then stagger each word
-                                }}
-                            >
-                                {word.split("").map((char, cIndex) => (
-                                    <motion.span
-                                        key={`${wIndex}-${cIndex}`}
-                                        variants={letterVariants}
-                                        className="inline-block"
-                                    >
-                                        {char}
-                                    </motion.span>
-                                ))}
-                            </motion.span>
-                        ))}
+                        {/* Question text - Large, bold, cinematic */}
+                        <h1
+                            className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl xl:text-8xl font-light leading-[1.15] tracking-tight"
+                            style={{
+                                fontFamily: "'Playfair Display', serif",
+                                fontStyle: 'italic',
+                                color: 'rgba(255, 255, 255, 0.92)',
+                                textShadow: '0 4px 60px rgba(0,0,0,0.5)',
+                            }}
+                        >
+                            {questionText}
+                        </h1>
                     </motion.div>
                 </AnimatePresence>
             </div>
 
-            {/* PREMIUM BUTTONS - Centered */}
+
+            {/* === BOTTOM CONTROLS === */}
             <motion.div
-                className="absolute bottom-20 left-0 right-0 flex justify-center items-center z-40"
-                initial={{ opacity: 0, y: 40 }}
+                className="absolute bottom-10 md:bottom-16 left-0 right-0 z-40"
+                initial={{ opacity: 0, y: 30 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.6, duration: 0.8 }}
             >
-                <div className="flex items-center gap-8 md:gap-16">
+                <div className="flex justify-center items-end gap-8 md:gap-16">
 
-                    {/* RISK IT - Molten Core */}
+                    {/* RISK */}
                     <motion.button
-                        whileHover={{ scale: 1.05, y: -2 }}
-                        whileTap={{ scale: 0.98 }}
                         onClick={() => actions.handleDareToRisk()}
-                        className="group relative"
+                        whileHover={{ y: -3 }}
+                        whileTap={{ scale: 0.95 }}
+                        className="group flex flex-col items-center gap-3"
                     >
-                        {/* Outer glow ring */}
-                        <div className="absolute -inset-1 bg-gradient-to-r from-red-600/30 via-orange-500/30 to-red-600/30 rounded-2xl blur-lg opacity-0 group-hover:opacity-100 transition-all duration-700" />
-
-                        {/* Main button */}
-                        <div className="relative px-8 py-4 bg-gradient-to-b from-red-950/60 to-red-950/40 rounded-2xl border border-red-800/40 group-hover:border-red-600/60 transition-all duration-500 backdrop-blur-sm overflow-hidden">
-                            {/* Inner shimmer */}
-                            <motion.div
-                                className="absolute inset-0 bg-gradient-to-r from-transparent via-red-500/10 to-transparent"
-                                animate={{ x: ['-200%', '200%'] }}
-                                transition={{ duration: 4, repeat: Infinity, ease: "linear" }}
-                            />
-
-                            {/* Content */}
-                            <div className="relative flex items-center gap-3">
-                                <Flame className="w-5 h-5 text-red-400 group-hover:text-red-300 transition-colors" />
-                                <span className="font-montserrat text-xs tracking-[0.2em] text-red-400/90 group-hover:text-red-300 transition-colors uppercase font-medium">
-                                    Risk It
-                                </span>
-                            </div>
+                        <div className={`relative p-4 rounded-full transition-all duration-500 ${isRiskGlowing
+                                ? 'bg-red-500/10 shadow-[0_0_40px_rgba(239,68,68,0.3)]'
+                                : 'bg-white/[0.02] hover:bg-white/[0.05]'
+                            }`}>
+                            {isRiskGlowing && (
+                                <motion.div
+                                    className="absolute inset-0 rounded-full bg-red-500/20"
+                                    animate={{ scale: [1, 1.3, 1], opacity: [0.5, 0, 0.5] }}
+                                    transition={{ duration: 2, repeat: Infinity }}
+                                />
+                            )}
+                            <Flame className={`w-5 h-5 transition-colors duration-300 ${isRiskGlowing ? 'text-red-400' : 'text-white/30 group-hover:text-white/60'
+                                }`} />
                         </div>
+                        <span className={`text-[10px] uppercase tracking-[0.3em] transition-colors duration-300 ${isRiskGlowing ? 'text-red-400/80' : 'text-white/20 group-hover:text-white/50'
+                            }`}>
+                            Risk
+                        </span>
                     </motion.button>
 
-                    {/* CONTINUE - Central Prism */}
+                    {/* CONTINUE - Primary action */}
                     <motion.button
                         onClick={onNext}
-                        whileHover={{ scale: 1.02, y: -3 }}
-                        whileTap={{ scale: 0.99 }}
+                        whileHover={{ scale: 1.02 }}
+                        whileTap={{ scale: 0.98 }}
                         className="group relative"
                     >
-                        {/* Multi-layer glow */}
-                        <div className="absolute -inset-2 bg-gradient-to-r from-blue-500/20 via-violet-500/20 to-blue-500/20 rounded-full blur-xl opacity-60 group-hover:opacity-100 transition-all duration-700" />
-                        <div className="absolute -inset-1 bg-gradient-to-r from-white/10 via-white/20 to-white/10 rounded-full blur-md opacity-0 group-hover:opacity-100 transition-all duration-500" />
-
-                        {/* Main button */}
-                        <div className="relative px-16 py-6 rounded-full overflow-hidden">
-                            {/* Glass background */}
-                            <div className="absolute inset-0 bg-gradient-to-b from-white/15 via-white/8 to-white/5 rounded-full border border-white/30 group-hover:border-white/50 transition-all duration-500 backdrop-blur-xl" />
-
-                            {/* Animated inner glow */}
-                            <motion.div
-                                className="absolute inset-0 bg-gradient-to-r from-transparent via-white/15 to-transparent rounded-full"
-                                animate={{ x: ['-150%', '150%'] }}
-                                transition={{ duration: 3, repeat: Infinity, ease: "linear" }}
-                            />
-
-                            {/* Radial highlight */}
-                            <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,_rgba(255,255,255,0.15)_0%,_transparent_60%)] rounded-full" />
+                        <div className="relative px-12 md:px-16 py-4 md:py-5">
+                            {/* Border */}
+                            <div className="absolute inset-0 border border-white/15 rounded-full group-hover:border-white/30 transition-colors duration-500" />
 
                             {/* Text */}
-                            <span className="relative font-playfair italic text-2xl md:text-3xl text-white/90 group-hover:text-white transition-all duration-500 tracking-wide drop-shadow-lg">
+                            <span
+                                className="relative text-lg md:text-xl text-white/70 group-hover:text-white transition-colors duration-300"
+                                style={{ fontFamily: "'Playfair Display', serif", fontStyle: 'italic' }}
+                            >
                                 Continue
                             </span>
                         </div>
                     </motion.button>
 
-                    {/* BOND - Celestial Heart */}
+                    {/* BOND */}
                     <motion.button
                         onClick={onBond}
-                        whileHover={{ scale: 1.1, rotate: 5, y: -2 }}
+                        whileHover={{ y: -3 }}
                         whileTap={{ scale: 0.95 }}
-                        className="group relative"
+                        className="group flex flex-col items-center gap-3"
                     >
-                        {/* Outer pulse ring */}
-                        <motion.div
-                            className="absolute -inset-2 bg-gradient-to-r from-blue-400/30 via-violet-400/30 to-blue-400/30 rounded-2xl blur-lg"
-                            animate={{ opacity: [0.3, 0.6, 0.3], scale: [1, 1.1, 1] }}
-                            transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
-                        />
-
-                        {/* Main button */}
-                        <div className="relative p-5 bg-gradient-to-b from-blue-950/60 to-violet-950/40 rounded-2xl border border-blue-500/30 group-hover:border-blue-400/60 transition-all duration-500 backdrop-blur-sm overflow-hidden">
-                            {/* Inner shimmer */}
-                            <motion.div
-                                className="absolute inset-0 bg-gradient-to-r from-transparent via-blue-400/10 to-transparent"
-                                animate={{ x: ['-200%', '200%'] }}
-                                transition={{ duration: 4, repeat: Infinity, ease: "linear" }}
-                            />
-
-                            <Heart className="relative w-6 h-6 text-blue-400/80 group-hover:text-blue-300 transition-colors" />
+                        <div className="p-4 rounded-full bg-white/[0.02] hover:bg-white/[0.05] transition-all duration-500">
+                            <Heart className="w-5 h-5 text-white/30 group-hover:text-purple-400/80 transition-colors duration-300" />
                         </div>
+                        <span className="text-[10px] uppercase tracking-[0.3em] text-white/20 group-hover:text-white/50 transition-colors duration-300">
+                            Bond
+                        </span>
                     </motion.button>
                 </div>
             </motion.div>
 
-            {/* RISK MODAL */}
+
+            {/* === RISK MODAL === */}
             <AnimatePresence>
                 {showRiskyQuestion && (
                     <motion.div
-                        className="fixed inset-0 z-[100] flex items-center justify-center bg-black/90 backdrop-blur-md"
+                        className="fixed inset-0 z-[100] flex items-center justify-center"
                         initial={{ opacity: 0 }}
                         animate={{ opacity: 1 }}
                         exit={{ opacity: 0 }}
+                        transition={{ duration: 0.4 }}
                     >
+                        {/* Backdrop */}
                         <motion.div
-                            variants={cardVariants}
-                            initial="initial"
-                            animate="animate"
-                            exit="exit"
-                            transition={{ type: "spring", bounce: 0.3, duration: 1 }}
-                            className="relative w-[90vw] max-w-[500px] aspect-[3/4] rounded-3xl overflow-hidden"
-                            style={{ perspective: '1000px' }}
+                            className="absolute inset-0 bg-black/95"
+                            onClick={() => actions?.setShowRiskyQuestion(false)}
+                        />
+
+                        {/* Red ambient glow */}
+                        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,_rgba(220,38,38,0.1)_0%,_transparent_50%)] pointer-events-none" />
+
+                        {/* Modal content */}
+                        <motion.div
+                            initial={{ scale: 0.9, opacity: 0 }}
+                            animate={{ scale: 1, opacity: 1 }}
+                            exit={{ scale: 0.95, opacity: 0 }}
+                            transition={{ duration: 0.3, ease: 'easeOut' }}
+                            className="relative w-[90vw] max-w-2xl px-8 py-16 text-center"
                         >
-                            {/* Card Background */}
-                            <div className="absolute inset-0 bg-gradient-to-b from-red-950/90 via-[#0a0505] to-[#050202] border border-red-900/50 rounded-3xl" />
+                            {/* Icon */}
+                            <motion.div
+                                initial={{ scale: 0 }}
+                                animate={{ scale: 1 }}
+                                transition={{ delay: 0.15, type: 'spring', stiffness: 200 }}
+                            >
+                                <Flame className="w-10 h-10 text-red-500/60 mx-auto mb-8" />
+                            </motion.div>
 
-                            {/* Ambient Glow */}
-                            <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,_rgba(239,68,68,0.1)_0%,_transparent_60%)]" />
+                            {/* Label */}
+                            <p className="font-montserrat text-[9px] tracking-[0.5em] text-red-400/40 uppercase mb-8">
+                                High Stakes
+                            </p>
 
-                            {/* Corner Decorations */}
-                            <div className="absolute top-6 right-6 text-red-500/20 text-5xl font-playfair italic">♦</div>
-                            <div className="absolute bottom-6 left-6 text-red-500/20 text-5xl font-playfair italic rotate-180">♦</div>
+                            {/* Question */}
+                            <h2
+                                className="text-3xl md:text-4xl lg:text-5xl leading-tight mb-12"
+                                style={{
+                                    fontFamily: "'Playfair Display', serif",
+                                    fontStyle: 'italic',
+                                    color: 'rgba(255, 245, 238, 0.9)'
+                                }}
+                            >
+                                {currentRiskyQuestion?.q || "What is your deepest fear?"}
+                            </h2>
 
-                            {/* Content */}
-                            <div className="relative h-full flex flex-col items-center justify-center p-12 text-center">
-                                <motion.div
-                                    initial={{ scale: 0 }}
-                                    animate={{ scale: 1 }}
-                                    transition={{ delay: 0.3, type: "spring" }}
-                                >
-                                    <Flame className="w-12 h-12 text-red-500/80 mb-6" />
-                                </motion.div>
-
-                                <motion.p
-                                    className="font-montserrat text-[10px] tracking-[0.5em] text-red-400/60 uppercase mb-8"
-                                    initial={{ opacity: 0, y: 10 }}
-                                    animate={{ opacity: 1, y: 0 }}
-                                    transition={{ delay: 0.4 }}
-                                >
-                                    High Stakes
-                                </motion.p>
-
-                                <motion.p
-                                    className="font-playfair italic text-2xl md:text-3xl text-white/90 leading-relaxed mb-12"
-                                    initial={{ opacity: 0, y: 20 }}
-                                    animate={{ opacity: 1, y: 0 }}
-                                    transition={{ delay: 0.5 }}
-                                >
-                                    {currentRiskyQuestion?.q || "What is your deepest fear?"}
-                                </motion.p>
-
-                                <motion.button
-                                    onClick={(e) => {
-                                        e.stopPropagation();
-                                        actions?.setShowRiskyQuestion(false);
-                                    }}
-                                    initial={{ opacity: 0, y: 20 }}
-                                    animate={{ opacity: 1, y: 0 }}
-                                    transition={{ delay: 0.7 }}
-                                    whileHover={{ scale: 1.02 }}
-                                    whileTap={{ scale: 0.98 }}
-                                    className="px-10 py-4 rounded-full border border-red-500/50 text-red-400/80 hover:bg-red-500/10 hover:text-red-300 hover:border-red-500/80 transition-all duration-500 font-montserrat text-xs tracking-[0.3em] uppercase"
-                                >
-                                    Accept Fate
-                                </motion.button>
-                            </div>
+                            {/* Accept button */}
+                            <motion.button
+                                onClick={() => actions?.setShowRiskyQuestion(false)}
+                                whileHover={{ scale: 1.02 }}
+                                whileTap={{ scale: 0.98 }}
+                                className="px-10 py-4 border border-red-500/30 rounded-full text-red-300/80 hover:text-white hover:border-red-400/50 hover:bg-red-500/10 transition-all duration-300 font-montserrat text-xs tracking-[0.25em] uppercase"
+                            >
+                                Accept
+                            </motion.button>
                         </motion.div>
                     </motion.div>
                 )}

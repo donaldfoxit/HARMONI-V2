@@ -14,6 +14,7 @@ import AffirmationStage from "./components/v3/AffirmationStage";
 import MusicPlayer from "./components/v3/MusicPlayer";
 import EntryScreen from "./components/v3/EntryScreen";
 import NoiseOverlay from "./components/effects/NoiseOverlay";
+import ConnectionScreen from "./components/v3/ConnectionScreen";
 
 const GlowBorder = () => (
   <div className="fixed top-0 left-0 w-screen h-screen pointer-events-none z-50 shadow-[inset_0_0_150px_rgba(0,0,0,0.9)] opacity-80" />
@@ -58,6 +59,15 @@ export default function App() {
     actions.startJourney();
   };
 
+  // Smooth scroll helper
+  const scrollToSection = (sectionId) => {
+    if (lenis) {
+      lenis.scrollTo(`#${sectionId}`, { duration: 1.8, easing: (t) => 1 - Math.pow(1 - t, 3) });
+    } else {
+      document.getElementById(sectionId)?.scrollIntoView({ behavior: 'smooth' });
+    }
+  };
+
   return (
     <>
       {/* Entry Screen - First thing user sees */}
@@ -90,19 +100,24 @@ export default function App() {
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ duration: 1.5, ease: "easeOut" }}
-          className="main-container relative w-full flex flex-col bg-[#000105]"
+          className="main-container relative w-full flex flex-col bg-[#000105] snap-y snap-mandatory"
         >
           <GlowBorder />
-          <NoiseOverlay opacity={0.04} />
-          <MusicPlayer autoStart={musicEnabled} />
+          <NoiseOverlay opacity={0.03} />
+          <MusicPlayer autoStart={musicEnabled} paused={showAffirmation} />
 
           {/* SECTION 1: HERO */}
-          <section id="hero" className="relative w-full min-h-screen z-30 flex flex-col">
-            <HeroSection onEnter={() => document.getElementById('setup').scrollIntoView({ behavior: 'smooth' })} />
+          <section id="hero" className="relative w-full min-h-screen z-30 flex flex-col snap-start">
+            <HeroSection onEnter={() => scrollToSection('connection')} />
           </section>
 
-          {/* SECTION 2: SETUP */}
-          <section id="setup" className="relative w-full min-h-screen z-30 bg-[#000105]">
+          {/* SECTION 2: CONNECTION - About bonding */}
+          <section id="connection" className="relative w-full min-h-screen z-30 snap-start">
+            <ConnectionScreen onContinue={() => scrollToSection('setup')} />
+          </section>
+
+          {/* SECTION 3: SETUP */}
+          <section id="setup" className="relative w-full min-h-screen z-30 bg-[#000105] snap-start">
             <SetupStage
               destinations={data.destinations.slice(0, 3)}
               onSelectDest={actions.setDestination}
